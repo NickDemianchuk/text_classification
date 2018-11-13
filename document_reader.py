@@ -8,8 +8,6 @@ class DocumentReader(object):
             file = open(file_name, 'r')
             lines = file.readlines()
             for line in lines:
-
                 df = df.append([[line, label]], ignore_index=True)
             file.close()
-        df.columns = ['review', 'label']
         return df
