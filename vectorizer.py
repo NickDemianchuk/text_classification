@@ -18,47 +18,47 @@ class Vectorizer(object):
                      'further', 'was', 'here', 'than']
 
     def __init__(self, docs):
-        self.f_counter = self.drop_ignored(
-                self.split_docs(docs)
-            )
+        self.token_counter = self.drop_ignored(
+            self.split_docs(docs)
+        )
 
-    def transform_list(self, list):
-        f_dict = {}
-        for i, sub_list in enumerate(list):
-            f_dict[sub_list[0]] = i
-        return f_dict
+    def transform_list(self, token_list):
+        token_dict = {}
+        for i, sub_list in enumerate(token_list):
+            token_dict[sub_list[0]] = i
+        return token_dict
 
-    def drop_ignored(self, dict):
+    def drop_ignored(self, token_dict):
         for word in self.ignored_words:
-            if word in dict:
-                del dict[word]
-        return dict
+            if word in token_dict:
+                del token_dict[word]
+        return token_dict
 
     def vectorize(self, docs, f_num):
-        # Number of samples
+        # A number of samples
         s_num = len(docs)
-        # Creating a numpy array of shape [num of samples x num of features]
-        v_arr = np.zeros(shape=[s_num, f_num])
-        # Getting a list of lists of words and their occurrences
-        f_list = self.f_counter.most_common(f_num)
-        # Transforming the list into a dictionary of words with corresponding indexes
-        # for later use in filling out the numpy array
-        f_dict = self.transform_list(f_list)
+        # A numpy array of shape [num of samples x num of features]
+        np_arr = np.zeros(shape=[s_num, f_num])
+        # A list of lists [word, number of occurrences]
+        token_list = self.token_counter.most_common(f_num)
+        # A dictionary [word, index]
+        token_dict = self.transform_list(token_list)
 
         for i, doc in enumerate(docs):
-            # Tokenizing each document in docs
-            w_counter = self.split_doc(doc)
+            # A Counter of tokens for each document
+            token_counter = Counter(self.split_doc(doc))
             # Filling out the numpy array
-            for key, val in w_counter.items():
-                if key in f_dict:
-                    v_arr[i][f_dict[key]] = val
-        return v_arr
+            for key, val in token_counter.items():
+                # Guard against stopwords
+                if key in token_dict:
+                    np_arr[i][token_dict[key]] = val
+        return np_arr
 
     def split_docs(self, docs):
-        c = Counter()
+        tokens = []
         for doc in docs:
-            c += self.split_doc(doc)
-        return c
+            tokens += self.split_doc(doc)
+        return Counter(tokens)
 
     def split_doc(self, doc):
-        return Counter(re.findall('\w+', doc))
+        return re.findall('\w+', doc)
